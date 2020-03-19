@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class FlowMobiusLoop<M, E> internal constructor(
     private val loopFactory: MobiusLoop.Factory<M, E, *>,
     private val startModel: M

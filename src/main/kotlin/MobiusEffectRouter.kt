@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlin.coroutines.EmptyCoroutineContext
 
-@UseExperimental(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class MobiusEffectRouter<F : Any, E>(
     private val effectClasses: Set<Class<*>>,
     private val effectPerformers: List<FlowTransformer<F, E>>

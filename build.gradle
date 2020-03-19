@@ -17,7 +17,7 @@ apply plugin: 'maven-publish'
 
 configure([compileKotlin, compileTestKotlin]) {
     kotlinOptions {
-        freeCompilerArgs += "-Xuse-experimental=kotlin.Experimental"
+        freeCompilerArgs += "-Xuse-experimental=kotlin.RequiresOptIn"
     }
 }
 

@@ -18,7 +18,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 
-@UseExperimental(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class FlowConnectablesTest {
 
     private lateinit var input: Channel<String>

@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.onEach
  * [EventSource.subscribe] is called and the job cancelled when
  * on [Disposable.dispose].
  */
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <E> Flow<E>.toEventSource(
     scope: CoroutineScope
 ): EventSource<E> =
@@ -35,7 +35,7 @@ fun <E> Flow<E>.toEventSource(
  * [EventSource.subscribe] is called when collection begins and
  * [Disposable.dispose] is called when the [Flow] is cancelled.
  */
-@UseExperimental(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 fun <E> EventSource<E>.toFlow(): Flow<E> =
     callbackFlow {
         val disposable = subscribe { event -> offer(event) }

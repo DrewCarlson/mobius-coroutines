@@ -17,7 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import java.lang.Exception
 
-@UseExperimental(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class FlowMobiusLoopTest {
 
     private lateinit var loop: FlowMobiusLoop<String, Int>

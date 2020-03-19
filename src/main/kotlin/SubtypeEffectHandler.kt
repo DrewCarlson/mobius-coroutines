@@ -16,7 +16,7 @@ fun <F : Any, E> subtypeEffectHandler(
         .apply(block)
         .build()
 
-@UseExperimental(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class SubtypeEffectHandlerBuilder<F : Any, E> {
     private val effectPerformerMap = hashMapOf<Class<*>, FlowTransformer<F, E>>()
 
