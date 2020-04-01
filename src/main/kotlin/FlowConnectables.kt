@@ -7,16 +7,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.Channel.Factory.UNLIMITED
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel.Factory.BUFFERED
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 
 /**
@@ -28,8 +22,8 @@ fun <I, O> flowConnectable(
     transform: FlowTransformer<I, O>
 ) = Connectable<I, O> { consumer ->
     val scope = CoroutineScope(Dispatchers.Unconfined)
-    val inputChannel = Channel<I>(UNLIMITED)
-    inputChannel.consumeAsFlow()
+    val inputChannel = BroadcastChannel<I>(BUFFERED)
+    inputChannel.asFlow()
         .run(transform)
         .takeWhile { scope.isActive }
         .onEach { output -> consumer.accept(output) }
