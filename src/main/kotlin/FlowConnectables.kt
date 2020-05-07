@@ -2,16 +2,11 @@ package drewcarlson.mobius.flow
 
 import com.spotify.mobius.Connectable
 import com.spotify.mobius.Connection
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel.Factory.BUFFERED
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
 
 /**
  * Constructs a [Connectable] that applies [transform] to
@@ -23,11 +18,12 @@ fun <I, O> flowConnectable(
 ) = Connectable<I, O> { consumer ->
     val scope = CoroutineScope(Dispatchers.Unconfined)
     val inputChannel = BroadcastChannel<I>(BUFFERED)
-    inputChannel.asFlow()
-        .run(transform)
-        .takeWhile { scope.isActive }
-        .onEach { output -> consumer.accept(output) }
-        .launchIn(scope)
+    scope.launch {
+        transform(inputChannel.asFlow()).collect { output ->
+            ensureActive()
+            consumer.accept(output)
+        }
+    }
     object : Connection<I> {
         override fun accept(value: I) {
             inputChannel.offer(value)
@@ -54,13 +50,16 @@ fun <I, O> Flow<I>.transform(
     connectable: Connectable<I, O>
 ): Flow<O> = callbackFlow {
     val connection = connectable.connect { output ->
-        offer(output)
+        if (isActive) offer(output)
     }
-    onEach { input ->
-        connection.accept(input)
-    }.onCompletion {
-        close()
-    }.launchIn(this)
+    launch {
+        onCompletion {
+            close()
+        }.collect { input ->
+            ensureActive()
+            connection.accept(input)
+        }
+    }
 
     awaitClose {
         connection.dispose()
