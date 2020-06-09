@@ -15,24 +15,27 @@ import kotlinx.coroutines.flow.*
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 fun <I, O> flowConnectable(
     transform: FlowTransformer<I, O>
-) = Connectable<I, O> { consumer ->
-    val scope = CoroutineScope(Dispatchers.Unconfined)
-    val inputChannel = BroadcastChannel<I>(BUFFERED)
-    scope.launch {
-        transform(inputChannel.asFlow()).collect { output ->
-            ensureActive()
-            consumer.accept(output)
+): Connectable<I, O> {
+    val actual = Connectable<I, O> { consumer ->
+        val scope = CoroutineScope(Dispatchers.Unconfined)
+        val inputChannel = BroadcastChannel<I>(BUFFERED)
+        scope.launch {
+            transform(inputChannel.asFlow()).collect { output ->
+                ensureActive()
+                consumer.accept(output)
+            }
         }
-    }
-    object : Connection<I> {
-        override fun accept(value: I) {
-            inputChannel.offer(value)
-        }
+        object : Connection<I> {
+            override fun accept(value: I) {
+                inputChannel.offer(value)
+            }
 
-        override fun dispose() {
-            scope.cancel()
+            override fun dispose() {
+                scope.cancel()
+            }
         }
     }
+    return DiscardAfterDisposeConnectable(actual)
 }
 
 /**
