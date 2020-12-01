@@ -4,9 +4,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.invoke
 
 fun <F : Any, E> subtypeEffectHandler(
@@ -35,6 +37,14 @@ class SubtypeEffectHandlerBuilder<F : Any, E> {
     inline fun <reified G : F> addAction(
         noinline effectHandler: suspend () -> Unit
     ) = addAction(G::class.java, effectHandler)
+
+    inline fun <reified G : F> addValueCollector(
+        noinline effectHandler: suspend FlowCollector<E>.(G) -> Unit
+    ) = addTransformer(G::class.java) { it.transform(effectHandler) }
+
+    inline fun <reified G : F> addLatestValueCollector(
+        noinline effectHandler: suspend FlowCollector<E>.(G) -> Unit
+    ) = addTransformer(G::class.java) { it.transformLatest(effectHandler) }
 
     inline fun <reified G : F> addFunctionSync(
         dispatcher: CoroutineDispatcher = Dispatchers.Default,
@@ -85,7 +95,7 @@ class SubtypeEffectHandlerBuilder<F : Any, E> {
         effectClass: Class<G>,
         effectHandler: suspend (effect: G) -> E
     ) = addTransformer(effectClass) { effects ->
-        effects.map { effect -> effectHandler(effect) }
+        effects.map(effectHandler)
     }
 
     fun <G : F> addConsumer(
